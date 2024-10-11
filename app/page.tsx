@@ -238,7 +238,6 @@ export default function ReslerianaleClone() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="mb-2"
-                icon={<Search className="h-4 w-4 text-gray-400" />}
               />
             </div>
             <div className="max-h-60 overflow-auto">
