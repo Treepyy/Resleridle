@@ -91,7 +91,7 @@ export default function ReslerianaleClone() {
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    // In a real game, you might want to set the solution based on the current date
+    // TODO: change to date seeding
     setSolution(characters[Math.floor(Math.random() * characters.length)])
   }, [])
 
@@ -151,7 +151,7 @@ export default function ReslerianaleClone() {
           <Button variant="ghost" size="icon">
             <ChevronLeft className="h-6 w-6" />
           </Button>
-          <h1 className="text-3xl font-bold text-center">Reslerianale</h1>
+          <h1 className="text-3xl font-bold text-center">Resleridle</h1>
           <Button variant="ghost" size="icon">
             <ChevronRight className="h-6 w-6" />
           </Button>
