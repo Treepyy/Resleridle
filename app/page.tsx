@@ -26,6 +26,7 @@ type Character = {
   name: string;
   role: string;
   element: string;
+  baseRarity: string;
   itemTrait1: string;
   itemTrait2: string;
   equipmentTrait: string;
@@ -39,6 +40,7 @@ const characters: Character[] = [
     name: "Ryza [One Summer Story]",
     role: "Attacker",
     element: "Fire",
+    baseRarity: "★★★",
     itemTrait1: "M.Def Blessing",
     itemTrait2: "Air Blessing",
     equipmentTrait: "Fire Damage Boost",
@@ -56,6 +58,7 @@ const characters: Character[] = [
     name: "Resna [Loved Rookie]",
     role: "Attacker",
     element: "Wind",
+    baseRarity: "★★★",
     itemTrait1: "Air Curse",
     itemTrait2: "Strike Blessing",
     equipmentTrait: "Air Damage Boost",
@@ -69,6 +72,7 @@ const attributes = [
   "name",
   "role",
   "element",
+  "baseRarity",
   "itemTrait1",
   "itemTrait2",
   "equipmentTrait",
@@ -173,6 +177,8 @@ export default function ReslerianaleClone() {
                     ? "Item Trait 2"
                     : attr === "equipmentTrait"
                     ? "Equipment Trait"
+                    : attr === "baseRarity"
+                    ? "Base Rarity"
                     : attr.charAt(0).toUpperCase() + attr.slice(1)}
                 </th>
               ))}
