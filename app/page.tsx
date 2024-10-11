@@ -1,85 +1,126 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { ChevronLeft, ChevronRight, HelpCircle, Settings } from 'lucide-react'
-import Image from 'next/image'
+import { useState, useEffect } from "react";
+import { ChevronLeft, ChevronRight, HelpCircle, Settings } from "lucide-react";
+import Image from "next/image";
 
-import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 type Character = {
-  photo: string
-  name: string
-  element: string
-  itemTrait1: string
-  itemTrait2: string
-  equipmentTrait: string
-  types: string[]
-}
+  photo: string;
+  name: string;
+  role: string;
+  element: string;
+  itemTrait1: string;
+  itemTrait2: string;
+  equipmentTrait: string;
+  types: string[];
+};
 
 const characters: Character[] = [
   {
-    photo: "https://barrelwisdom.com/media/games/resleri/characters/full/ryza-one-summer-story.webp",
+    photo:
+      "https://barrelwisdom.com/media/games/resleri/characters/full/ryza-one-summer-story.webp",
     name: "Ryza [One Summer Story]",
+    role: "Attacker",
     element: "Fire",
     itemTrait1: "M.Def Blessing",
     itemTrait2: "Air Blessing",
     equipmentTrait: "Fire Damage Boost",
-    types: ["Kurken Island", "Promise & Teamwork", "Adventurer", "Dragon Slayer", "Spirited"]
+    types: [
+      "Kurken Island",
+      "Promise & Teamwork",
+      "Adventurer",
+      "Dragon Slayer",
+      "Spirited",
+    ],
   },
   {
-    photo: "https://barrelwisdom.com/media/games/resleri/characters/full/resna-4.webp",
+    photo:
+      "https://barrelwisdom.com/media/games/resleri/characters/full/resna-4.webp",
     name: "Resna [Loved Rookie]",
+    role: "Attacker",
     element: "Wind",
     itemTrait1: "Air Curse",
     itemTrait2: "Strike Blessing",
     equipmentTrait: "Air Damage Boost",
-    types: ["Lantarna", "Promise & Teamwork", "Bookworm", "Resleriana Academy"]
+    types: ["Lantarna", "Promise & Teamwork", "Bookworm", "Resleriana Academy"],
   },
   // TODO: migrate characters to db
-]
+];
 
-const attributes = ['photo', 'name', 'element', 'itemTrait1', 'itemTrait2', 'equipmentTrait', 'types'] as const
-type Attribute = typeof attributes[number]
+const attributes = [
+  "photo",
+  "name",
+  "role",
+  "element",
+  "itemTrait1",
+  "itemTrait2",
+  "equipmentTrait",
+  "types",
+] as const;
+type Attribute = (typeof attributes)[number];
 
 export default function ReslerianaleClone() {
-  const [guesses, setGuesses] = useState<Character[]>([])
-  const [gameOver, setGameOver] = useState(false)
-  const [solution, setSolution] = useState<Character>(characters[Math.floor(Math.random() * characters.length)])
+  const [guesses, setGuesses] = useState<Character[]>([]);
+  const [gameOver, setGameOver] = useState(false);
+  const [solution, setSolution] = useState<Character>(
+    characters[Math.floor(Math.random() * characters.length)]
+  );
 
   useEffect(() => {
     // TODO: set solution based on the current date
-    setSolution(characters[Math.floor(Math.random() * characters.length)])
-  }, [])
+    setSolution(characters[Math.floor(Math.random() * characters.length)]);
+  }, []);
 
   const handleGuess = (characterName: string) => {
-    const guessedCharacter = characters.find(char => char.name === characterName)
+    const guessedCharacter = characters.find(
+      (char) => char.name === characterName
+    );
     if (guessedCharacter) {
-      const newGuesses = [...guesses, guessedCharacter]
-      setGuesses(newGuesses)
+      const newGuesses = [...guesses, guessedCharacter];
+      setGuesses(newGuesses);
       if (guessedCharacter.name === solution.name || newGuesses.length === 6) {
-        setGameOver(true)
+        setGameOver(true);
       }
     }
-  }
+  };
 
   const getAttributeStyle = (attribute: Attribute, guess: Character) => {
-    if (attribute === 'photo') return ''
-    if (attribute === 'types') {
-      const guessTypes = Array.from(new Set(guess.types))
-      const solutionTypes = Array.from(new Set(solution.types))
-      const exactMatch = JSON.stringify(guessTypes.sort()) === JSON.stringify(solutionTypes.sort())
-      const partialMatch = guessTypes.some(type => solutionTypes.includes(type))
-      if (exactMatch) return 'bg-green-500 text-white'
-      if (partialMatch) return 'bg-yellow-500 text-white'
-      return 'bg-gray-500 text-white'
+    if (attribute === "photo") return "";
+    if (attribute === "types") {
+      const guessTypes = Array.from(new Set(guess.types));
+      const solutionTypes = Array.from(new Set(solution.types));
+      const exactMatch =
+        JSON.stringify(guessTypes.sort()) ===
+        JSON.stringify(solutionTypes.sort());
+      const partialMatch = guessTypes.some((type) =>
+        solutionTypes.includes(type)
+      );
+      if (exactMatch) return "bg-green-500 text-white";
+      if (partialMatch) return "bg-yellow-500 text-white";
+      return "bg-gray-500 text-white";
     }
     if (guess[attribute] === solution[attribute]) {
-      return 'bg-green-500 text-white'
+      return "bg-green-500 text-white";
     }
-    return 'bg-gray-500 text-white'
-  }
+    return "bg-gray-500 text-white";
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center py-8 px-4">
@@ -104,9 +145,12 @@ export default function ReslerianaleClone() {
               <DialogHeader>
                 <DialogTitle>How to Play</DialogTitle>
                 <DialogDescription>
-                  Guess the Atelier Resleriana character in 6 tries! Each guess must be a valid character. 
-                  After each guess, the color of the tiles will change to show how close your guess was to the answer.
-                  Green indicates a correct attribute, yellow indicates a partial match for Types, and gray indicates an incorrect one.
+                  Guess the Atelier Resleriana character in 6 tries! Each guess
+                  must be a valid character. After each guess, the color of the
+                  tiles will change to show how close your guess was to the
+                  answer. Green indicates a correct attribute, yellow indicates
+                  a partial match for Types, and gray indicates an incorrect
+                  one.
                 </DialogDescription>
               </DialogHeader>
             </DialogContent>
@@ -121,12 +165,15 @@ export default function ReslerianaleClone() {
         <table className="w-full border-collapse">
           <thead>
             <tr>
-              {attributes.map(attr => (
+              {attributes.map((attr) => (
                 <th key={attr} className="p-2 text-sm font-bold text-left">
-                  {attr === 'itemTrait1' ? 'Item Trait 1' : 
-                   attr === 'itemTrait2' ? 'Item Trait 2' : 
-                   attr === 'equipmentTrait' ? 'Equipment Trait' : 
-                   attr.charAt(0).toUpperCase() + attr.slice(1)}
+                  {attr === "itemTrait1"
+                    ? "Item Trait 1"
+                    : attr === "itemTrait2"
+                    ? "Item Trait 2"
+                    : attr === "equipmentTrait"
+                    ? "Equipment Trait"
+                    : attr.charAt(0).toUpperCase() + attr.slice(1)}
                 </th>
               ))}
             </tr>
@@ -134,19 +181,32 @@ export default function ReslerianaleClone() {
           <tbody>
             {[...Array(6)].map((_, i) => (
               <tr key={i}>
-                {attributes.map(attr => {
-                  const guessedChar = guesses[i]
+                {attributes.map((attr) => {
+                  const guessedChar = guesses[i];
                   return (
-                    <td key={attr} className={`p-2 border ${guessedChar ? getAttributeStyle(attr, guessedChar) : 'bg-white'}`}>
-                      {attr === 'photo' && guessedChar ? (
-                        <Image src={guessedChar.photo} alt={guessedChar.name} width={50} height={50} className="rounded-full" />
-                      ) : attr === 'types' && guessedChar ? (
-                        guessedChar[attr].join(', ')
+                    <td
+                      key={attr}
+                      className={`p-2 border ${
+                        guessedChar
+                          ? getAttributeStyle(attr, guessedChar)
+                          : "bg-white"
+                      }`}
+                    >
+                      {attr === "photo" && guessedChar ? (
+                        <Image
+                          src={guessedChar.photo}
+                          alt={guessedChar.name}
+                          width={50}
+                          height={50}
+                          className="rounded-full"
+                        />
+                      ) : attr === "types" && guessedChar ? (
+                        guessedChar[attr].join(", ")
                       ) : (
-                        guessedChar?.[attr] || ''
+                        guessedChar?.[attr] || ""
                       )}
                     </td>
-                  )
+                  );
                 })}
               </tr>
             ))}
@@ -160,8 +220,10 @@ export default function ReslerianaleClone() {
             <SelectValue placeholder="Select a character" />
           </SelectTrigger>
           <SelectContent>
-            {characters.map(char => (
-              <SelectItem key={char.name} value={char.name}>{char.name}</SelectItem>
+            {characters.map((char) => (
+              <SelectItem key={char.name} value={char.name}>
+                {char.name}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -170,12 +232,20 @@ export default function ReslerianaleClone() {
       {gameOver && (
         <div className="mt-8 text-center">
           <h2 className="text-2xl font-bold mb-4">
-            {guesses[guesses.length - 1].name === solution.name ? 'Congratulations!' : 'Game Over'}
+            {guesses[guesses.length - 1].name === solution.name
+              ? "Congratulations!"
+              : "Game Over"}
           </h2>
           <p className="text-xl">The character was: {solution.name}</p>
-          <Image src={solution.photo} alt={solution.name} width={100} height={100} className="rounded-full mx-auto mt-4" />
+          <Image
+            src={solution.photo}
+            alt={solution.name}
+            width={100}
+            height={100}
+            className="rounded-full mx-auto mt-4"
+          />
         </div>
       )}
     </div>
-  )
+  );
 }
