@@ -222,13 +222,26 @@ export default function ReslerianaleClone() {
 
       <div className="w-full max-w-sm mb-8">
         <Select onValueChange={handleGuess} disabled={gameOver}>
-          <SelectTrigger>
+          <SelectTrigger className="w-full">
             <SelectValue placeholder="Select a character" />
           </SelectTrigger>
           <SelectContent>
             {characters.map((char) => (
-              <SelectItem key={char.name} value={char.name}>
-                {char.name}
+              <SelectItem
+                key={char.name}
+                value={char.name}
+                className="hover:bg-gray-100 transition-colors"
+              >
+                <div className="flex items-center space-x-2">
+                  <Image
+                    src={char.photo}
+                    alt={char.name}
+                    width={30}
+                    height={30}
+                    className="rounded-full object-cover"
+                  />
+                  <span className="font-medium">{char.name}</span>
+                </div>
               </SelectItem>
             ))}
           </SelectContent>
