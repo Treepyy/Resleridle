@@ -1,32 +1,49 @@
-"use client";
+'use client'
 
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from 'react'
 import { ChevronLeft, ChevronRight, HelpCircle, Settings, Search, ChevronDown } from 'lucide-react'
 import Image from 'next/image'
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-/* import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"; */
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+
+import attackerImg from '@/public/images/roles/attacker.png'
+import breakerImg from '@/public/images/roles/breaker.png'
+import defenderImg from '@/public/images/roles/defender.png'
+import supporterImg from '@/public/images/roles/supporter.png'
+
+import fireImg from '@/public/images/elements/fire.png'
+import windImg from '@/public/images/elements/wind.png'
+import iceImg from '@/public/images/elements/ice.png'
+import boltImg from '@/public/images/elements/bolt.png'
+import stabImg from '@/public/images/elements/stab.png'
+import strikeImg from '@/public/images/elements/strike.png'
+import slashImg from '@/public/images/elements/slash.png'
+
+const roleImages = {
+  "Attacker": attackerImg,
+  "Breaker": breakerImg,
+  "Defender": defenderImg,
+  "Supporter": supporterImg,
+}
+
+const elementImages = {
+  "Fire": fireImg,
+  "Wind": windImg,
+  "Ice": iceImg,
+  "Bolt": boltImg,
+  "Stab": stabImg,
+  "Strike": strikeImg,
+  "Slash": slashImg,
+}
 
 type Character = {
   photo: string;
+  fullPhoto: string;
   name: string;
-  role: string;
-  element: string;
+  role: keyof typeof roleImages;
+  element: keyof typeof elementImages;
   baseRarity: string;
   itemTrait1: string;
   itemTrait2: string;
@@ -37,7 +54,8 @@ type Character = {
 const characters: Character[] = [
   {
     photo:
-      "https://barrelwisdom.com/media/games/resleri/characters/full/ryza-one-summer-story.webp",
+      "https://barrelwisdom.com/media/games/resleri/characters/face/ryza-one-summer-story.webp",
+    fullPhoto: "https://barrelwisdom.com/media/games/resleri/characters/full/ryza-one-summer-story.webp" ,
     name: "Ryza [One Summer Story]",
     role: "Attacker",
     element: "Fire",
@@ -55,7 +73,8 @@ const characters: Character[] = [
   },
   {
     photo:
-      "https://barrelwisdom.com/media/games/resleri/characters/full/resna-4.webp",
+      "https://barrelwisdom.com/media/games/resleri/characters/face/resna-4.webp",
+    fullPhoto: "https://barrelwisdom.com/media/games/resleri/characters/full/resna-4.webp",
     name: "Resna [Loved Rookie]",
     role: "Attacker",
     element: "Wind",
@@ -65,33 +84,22 @@ const characters: Character[] = [
     equipmentTrait: "Air Damage Boost",
     types: ["Lantarna", "Promise & Teamwork", "Bookworm", "Resleriana Academy"],
   },
-  // TODO: migrate characters to db
 ];
 
-const attributes = [
-  "photo",
-  "name",
-  "role",
-  "element",
-  "baseRarity",
-  "itemTrait1",
-  "itemTrait2",
-  "equipmentTrait",
-  "types",
-] as const;
-type Attribute = (typeof attributes)[number];
+const attributes = ['photo', 'name', 'role', 'element', 'baseRarity', 'itemTrait1', 'itemTrait2', 'equipmentTrait', 'types'] as const;
+type Attribute = typeof attributes[number]
 
-
-export default function ReslerianaleClone() {
+export default function Resleridle() {
   const [guesses, setGuesses] = useState<Character[]>([])
   const [gameOver, setGameOver] = useState(false)
   const [solution, setSolution] = useState<Character>(characters[Math.floor(Math.random() * characters.length)])
   const [isOpen, setIsOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
+  const [revealedCells, setRevealedCells] = useState<boolean[][]>([])
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    // TODO: change to date seeding
+    // TODO: set the solution based on the current date
     setSolution(characters[Math.floor(Math.random() * characters.length)])
   }, [])
 
@@ -110,7 +118,7 @@ export default function ReslerianaleClone() {
 
   const handleGuess = (characterName: string) => {
     const guessedCharacter = characters.find(char => char.name === characterName)
-    if (guessedCharacter) {
+    if (guessedCharacter && !guesses.some(guess => guess.name === characterName)) {
       const newGuesses = [...guesses, guessedCharacter]
       setGuesses(newGuesses)
       if (guessedCharacter.name === solution.name || newGuesses.length === 6) {
@@ -118,13 +126,26 @@ export default function ReslerianaleClone() {
       }
       setIsOpen(false)
       setSearchTerm('')
+
+      revealCells(newGuesses.length - 1)
     }
   }
+
+  const revealCells = (rowIndex: number) => {
+    setTimeout(() => {
+      setRevealedCells(prev => {
+        const newState = [...prev];
+        newState[rowIndex] = Array(attributes.length).fill(true);
+        return newState;
+      });
+    }, 100); 
+  };
 
   const toggleDropdown = () => setIsOpen(!isOpen)
 
   const filteredCharacters = characters.filter(char =>
-    char.name.toLowerCase().includes(searchTerm.toLowerCase())
+    char.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+    !guesses.some(guess => guess.name === char.name)
   )
 
   const getAttributeStyle = (attribute: Attribute, guess: Character) => {
@@ -167,7 +188,7 @@ export default function ReslerianaleClone() {
               <DialogHeader>
                 <DialogTitle>How to Play</DialogTitle>
                 <DialogDescription>
-                  Guess the Atelier Resleriana character in 6 tries. Each guess must be a valid character.
+                  Guess the Atelier Resleriana character in 6 tries. Each guess must be a valid character. 
                   After each guess, the color of the tiles will change to show how close your guess was to the character.
                   Green indicates a correct attribute, yellow indicates a partial match for Types, and gray indicates an incorrect one.
                 </DialogDescription>
@@ -180,45 +201,7 @@ export default function ReslerianaleClone() {
         </div>
       </header>
 
-      <div className="w-full max-w-4xl mb-8 overflow-x-auto">
-        <table className="w-full border-collapse">
-          <thead>
-            <tr>
-              {attributes.map(attr => (
-                <th key={attr} className="p-2 text-sm font-bold text-left">
-                  {attr === 'itemTrait1' ? 'Item Trait 1' :
-                   attr === 'itemTrait2' ? 'Item Trait 2' :
-                   attr === 'equipmentTrait' ? 'Equipment Trait' :
-                   attr === 'baseRarity' ? 'Base Rarity' :
-                   attr.charAt(0).toUpperCase() + attr.slice(1)}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {[...Array(6)].map((_, i) => (
-              <tr key={i}>
-                {attributes.map(attr => {
-                  const guessedChar = guesses[i]
-                  return (
-                    <td key={attr} className={`p-2 border ${guessedChar ? getAttributeStyle(attr, guessedChar) : 'bg-white'}`}>
-                      {attr === 'photo' && guessedChar ? (
-                        <Image src={guessedChar.photo} alt={guessedChar.name} width={50} height={50} className="rounded-full" />
-                      ) : attr === 'types' && guessedChar ? (
-                        guessedChar[attr].join(', ')
-                      ) : (
-                        guessedChar?.[attr] || ''
-                      )}
-                    </td>
-                  )
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="w-full max-w-sm mb-8 relative rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 z-10" ref={dropdownRef}>
+      <div className="w-full max-w-sm mb-4 relative" ref={dropdownRef}>
         <Button
           onClick={toggleDropdown}
           variant="default"
@@ -231,10 +214,10 @@ export default function ReslerianaleClone() {
 
         {isOpen && (
           <div className="absolute mt-2 w-full rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 z-10">
-            <div className="p-3">
+            <div className="p-2">
               <Input
                 type="text"
-                placeholder="Enter character name..."
+                placeholder="Search characters..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="mb-2"
@@ -267,14 +250,74 @@ export default function ReslerianaleClone() {
       </div>
 
       {gameOver && (
-        <div className="mt-8 text-center">
+        <div className="mt-8 mb-4 text-center">
           <h2 className="text-2xl font-bold mb-4">
             {guesses[guesses.length - 1].name === solution.name ? 'Congratulations!' : 'Game Over'}
           </h2>
           <p className="text-xl">The character was: {solution.name}</p>
-          <Image src={solution.photo} alt={solution.name} width={100} height={100} className="rounded-full mx-auto mt-4" />
+          <Image src={solution.fullPhoto} alt={solution.name} width={100} height={100} className="rounded-full mx-auto mt-4" />
         </div>
       )}
+
+      <div className="w-full max-w-4xl mb-4 overflow-x-auto">
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="bg-primary text-primary-foreground">
+              {attributes.map(attr => (
+                <th key={attr} className="p-2 text-sm font-bold text-center border-r border-primary-foreground last:border-r-0">
+                  {attr === 'itemTrait1' ? 'Item Trait 1' : 
+                   attr === 'itemTrait2' ? 'Item Trait 2' : 
+                   attr === 'equipmentTrait' ? 'Equipment Trait' : 
+                   attr === 'baseRarity' ? 'Base Rarity' :
+                   attr.charAt(0).toUpperCase() + attr.slice(1)}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {guesses.map((guess, i) => (
+              <tr key={i}>
+                {attributes.map((attr, j) => {
+                  const isRevealed = revealedCells[i]?.[j]
+                  return (
+                    <td 
+                      key={attr} 
+                      className={`p-2 border ${getAttributeStyle(attr, guess)} 
+                                  transition-all duration-500 ease-in-out`}
+                      style={{
+                        perspective: '1000px',
+                        transformStyle: 'preserve-3d',
+                        transform: isRevealed ? 'rotateX(0deg)' : 'rotateX(180deg)',
+                      }}
+                    >
+                      <div 
+                        className={`w-full h-full ${isRevealed ? 'opacity-100' : 'opacity-0'} 
+                                    transition-opacity duration-150 delay-300 flex justify-center items-center`}
+                        style={{
+                          backfaceVisibility: 'hidden',
+                          transform: isRevealed ? 'rotateX(0deg)' : 'rotateX(180deg)',
+                        }}
+                      >
+                        {attr === 'photo' ? (
+                          <Image src={guess.photo} alt={guess.name} width={100} height={100} className="rounded-full" />
+                        ) : attr === 'role' ? (
+                          <Image src={roleImages[guess.role]} alt={guess.role} width={100} height={100} />
+                        ) : attr === 'element' ? (
+                          <Image src={elementImages[guess.element]} alt={guess.element} width={60} height={60} />
+                        ) : attr === 'types' ? (
+                          guess[attr].join(', ')
+                        ) : (
+                          guess[attr]
+                        )}
+                      </div>
+                    </td>
+                  )
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }
