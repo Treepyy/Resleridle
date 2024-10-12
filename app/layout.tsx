@@ -14,7 +14,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Resleridle",
+  title: "Resleridle - Guessing game with Atelier Resleriana characters",
   description: "Genshindle clone for Atelier Resleriana.",
 };
 
