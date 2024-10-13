@@ -220,6 +220,7 @@ export default function Resleridle() {
 
   useEffect(() => {
     // TODO: set the solution based on the current date
+    // current random: Math.floor(Math.random() * characters.length) | test character: 6, 8
     setSolution(characters[Math.floor(Math.random() * characters.length)])
   }, [])
 
@@ -270,7 +271,9 @@ export default function Resleridle() {
 
   const getAttributeStyle = (attribute: Attribute, guess: Character) => {
     if (attribute === 'photo') return ''
-    if (attribute === 'types') {
+
+    // returns yellow if atleast one type is matching with the solution
+    if (attribute === 'types') { 
       const guessTypes = Array.from(new Set(guess.types))
       const solutionTypes = Array.from(new Set(solution.types))
       const exactMatch = JSON.stringify(guessTypes.sort()) === JSON.stringify(solutionTypes.sort())
@@ -278,6 +281,30 @@ export default function Resleridle() {
       if (exactMatch) return 'bg-green-500 text-white'
       if (partialMatch) return 'bg-yellow-500 text-white'
       return 'bg-gray-500 text-white'
+    }
+
+    // returns yellow if trait1 matches trait2 for items (mostly just happens with crit finish)
+    if (attribute === 'itemTrait1'){
+      if (guess.itemTrait1 === solution.itemTrait2){
+        return 'bg-yellow-500 text-white'
+      }
+    }
+    if (attribute === 'itemTrait2'){
+      if (guess.itemTrait2 === solution.itemTrait1){
+        return 'bg-yellow-500 text-white'
+      }
+    }
+
+    // returns yellow if its the right character but the wrong costume (this might be OP might remove idk)
+    if (attribute === 'name'){
+      const myArray = guess.name.split(" ");
+      const myArray2 = solution.name.split(" ");
+      const guessName = myArray[0];
+      const solutionName = myArray2[0];
+      if (guessName === solutionName && myArray[1] != myArray2[1]){
+        return 'bg-yellow-500 text-white'
+      }
+
     }
     if (guess[attribute] === solution[attribute]) {
       return 'bg-green-500 text-white'
@@ -388,9 +415,9 @@ export default function Resleridle() {
               <tr className="bg-blue-900 text-white">
                 {attributes.map(attr => (
                   <th key={attr} className="p-2 text-sm font-bold text-center border-r border-blue-700 last:border-r-0">
-                    {attr === 'itemTrait1' ? 'Item Trait 1' : 
-                     attr === 'itemTrait2' ? 'Item Trait 2' : 
-                     attr === 'equipmentTrait' ? 'Equipment Trait' : 
+                    {attr === 'itemTrait1' ? 'Item Gift 1' : 
+                     attr === 'itemTrait2' ? 'Item Gift 2' : 
+                     attr === 'equipmentTrait' ? 'Equipment Gift' : 
                      attr === 'baseRarity' ? 'Base Rarity' :
                      attr.charAt(0).toUpperCase() + attr.slice(1)}
                   </th>
