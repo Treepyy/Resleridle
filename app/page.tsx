@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
-import { ChevronLeft, ChevronRight, HelpCircle, Settings, Search, ChevronDown } from 'lucide-react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
+import { ChevronLeft, ChevronRight, HelpCircle, Settings, Search, ChevronDown, Share2 } from 'lucide-react'
 import Image from 'next/image'
 
 import { Button } from "@/components/ui/button"
@@ -51,7 +51,7 @@ type Character = {
   types: string[];
 };
 
-const characters: Character[] = [
+const originalCharacters: Character[] = [
   {
     photo:
       "https://barrelwisdom.com/media/games/resleri/characters/face/ryza-one-summer-story.webp",
@@ -210,17 +210,22 @@ const attributes = ['photo', 'name', 'role', 'element', 'baseRarity', 'itemTrait
 type Attribute = typeof attributes[number]
 
 export default function Resleridle() {
+  const characters = useMemo(() => {
+    const sortedCharacters = [...originalCharacters].sort((a, b) => a.name.localeCompare(b.name));
+    return sortedCharacters;
+  }, []);
+
   const [guesses, setGuesses] = useState<Character[]>([])
   const [gameOver, setGameOver] = useState(false)
   const [solution, setSolution] = useState<Character>(characters[Math.floor(Math.random() * characters.length)])
   const [isOpen, setIsOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [revealedCells, setRevealedCells] = useState<boolean[][]>([])
-  const dropdownRef = useRef<HTMLDivElement>(null)
+  const [shareButtonText, setShareButtonText] = useState('Share!')
 
   useEffect(() => {
     // TODO: set the solution based on the current date
-    // current random: Math.floor(Math.random() * characters.length) | test character: 6, 8
+    // current random: Math.floor(Math.random() * characters.length) | test character: 7, 8
     setSolution(characters[Math.floor(Math.random() * characters.length)])
   }, [])
 
@@ -293,24 +298,55 @@ export default function Resleridle() {
       if (guess.itemTrait2 === solution.itemTrait1){
         return 'bg-yellow-500 text-white'
       }
+    
     }
 
     // returns yellow if its the right character but the wrong costume (this might be OP might remove idk)
     if (attribute === 'name'){
-      const myArray = guess.name.split(" ");
-      const myArray2 = solution.name.split(" ");
-      const guessName = myArray[0];
-      const solutionName = myArray2[0];
-      if (guessName === solutionName && myArray[1] != myArray2[1]){
+      if (guess.name.split(" ")[0] === solution.name.split(" ")[0] && guess.name.split(" ")[1] != solution.name.split(" ")[1]){
         return 'bg-yellow-500 text-white'
       }
-
     }
     if (guess[attribute] === solution[attribute]) {
       return 'bg-green-500 text-white'
     }
     return 'bg-gray-500 text-white'
   }
+
+  const generateShareText = () => {
+    const emojiMap = {
+      'bg-green-500': '🟩',
+      'bg-yellow-500': '🟨',
+      'bg-gray-500': '⬜'
+    }
+    
+    let shareText = guesses[guesses.length - 1].name === solution.name
+      ? `I found today's Resleridle in ${guesses.length} ${guesses.length === 1 ? 'try' : 'tries'}!\n\n`
+      : "I couldn't find today's Resleridle\n\n"
+
+    guesses.forEach((guess) => {
+      attributes.forEach((attr) => {
+        if (attr !== 'photo') {
+          const style = getAttributeStyle(attr, guess)
+          const styleKey = style.split(' ')[0] as keyof typeof emojiMap;
+          shareText += emojiMap[styleKey] || '⬜';
+        }
+      })
+      shareText += '\n'
+    })
+
+    shareText += '\nhttps://resleridle.vercel.app/'
+    return shareText
+  }
+
+  const copyToClipboard = () => {
+    const shareText = generateShareText()
+    navigator.clipboard.writeText(shareText).then(() => {
+      setShareButtonText('Copied to clipboard!')
+    })
+  }
+
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
   return (
     <div className="min-h-screen bg-cover bg-center flex flex-col items-center py-8 px-4" style={{backgroundImage: "url('https://i.imgur.com/uFgv3iH.jpeg')"}}>
@@ -334,11 +370,15 @@ export default function Resleridle() {
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>How to Play</DialogTitle>
+                  <DialogTitle>How to Play?</DialogTitle>
                   <DialogDescription>
-                    Guess the Atelier Resleriana character in 6 tries. Each guess must be a valid character. 
+                    Guess the Atelier Resleriana character in 6 tries! Each guess must be a valid character.
+                  </DialogDescription>
+                  <DialogDescription>
                     After each guess, the color of the tiles will change to show how close your guess was to the character.
-                    Green indicates a correct attribute, yellow indicates a partial match for Types, and gray indicates an incorrect one.
+                  </DialogDescription>
+                  <DialogDescription>
+                    Green indicates a correct attribute, yellow indicates a partial match, and gray indicates an incorrect one.
                   </DialogDescription>
                 </DialogHeader>
               </DialogContent>
@@ -349,15 +389,15 @@ export default function Resleridle() {
           </div>
         </header>
 
-        <div className="bg-gray rounded-lg p-4 mb-6">
-          <div className="w-full mb-4 relative" ref={dropdownRef}>
+        <div className="bg-gray rounded-lg p-4">
+          <div className="w-full relative" ref={dropdownRef}>
             <Button
               onClick={toggleDropdown}
               variant="default"
               className="w-full justify-between bg-black text-white"
               disabled={gameOver}
             >
-              Select or search for a character
+              Select or search for a character!
               <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
 
@@ -366,7 +406,7 @@ export default function Resleridle() {
                 <div className="p-2">
                   <Input
                     type="text"
-                    placeholder="Search characters..."
+                    placeholder="Enter character name..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="mb-2"
@@ -405,6 +445,18 @@ export default function Resleridle() {
               </h2>
               <p className="text-xl text-white">The character was: {solution.name}</p>
               <Image src={solution.fullPhoto} alt={solution.name} width={200} height={200} className="rounded-full mx-auto mt-4" />
+              <Button 
+                onClick={copyToClipboard} 
+                className={`mt-4 ${
+                  shareButtonText === 'Copied to clipboard!' 
+                    ? 'bg-green-500 hover:bg-green-600' 
+                    : 'bg-gray-800 hover:bg-gray-600'
+                } text-white`} 
+                disabled={shareButtonText === 'Copied to clipboard!'}
+              >
+                {shareButtonText === 'Copied to clipboard!' ? null : <Share2 className="mr-2 h-4 w-4" />}
+                {shareButtonText}
+              </Button>
             </div>
           )}
         </div>
