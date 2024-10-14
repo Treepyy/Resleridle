@@ -21,6 +21,8 @@ import stabImg from '@/public/images/elements/stab.png'
 import strikeImg from '@/public/images/elements/strike.png'
 import slashImg from '@/public/images/elements/slash.png'
 
+import bgImg from '@/public/images/bg.jpg'
+
 const roleImages = {
   "Attacker": attackerImg,
   "Breaker": breakerImg,
@@ -215,6 +217,8 @@ export default function Resleridle() {
     return sortedCharacters;
   }, []);
 
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const [guesses, setGuesses] = useState<Character[]>([])
   const [gameOver, setGameOver] = useState(false)
   const [solution, setSolution] = useState<Character>(characters[Math.floor(Math.random() * characters.length)])
@@ -349,8 +353,15 @@ export default function Resleridle() {
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   return (
-    <div className="min-h-screen bg-cover bg-center flex flex-col items-center py-8 px-4" style={{backgroundImage: "url('https://i.imgur.com/uFgv3iH.jpeg')"}}>
-      <div className="w-full max-w-4xl bg-gray-900 bg-opacity-80 rounded-lg shadow-lg p-6">
+    <div className="min-h-screen bg-cover bg-center flex flex-col items-center py-8 px-4 relative overflow-hidden">
+      <Image
+        src={bgImg}
+        alt="Background"
+        fill
+        style={{ objectFit: 'cover', zIndex: -1 }}
+        quality={100}
+      />
+      <div className="w-full max-w-4xl bg-gray-900 bg-opacity-80 rounded-lg shadow-lg p-6 overflow-y-auto hide-scrollbar z-10" style={{ maxHeight: 'calc(100vh - 4rem)' }}>
         <header className="mb-8">
           <div className="flex justify-between items-center mb-4">
             <Button variant="ghost" size="icon">
@@ -390,8 +401,9 @@ export default function Resleridle() {
         </header>
 
         <div className="bg-gray rounded-lg p-4">
-          <div className="w-full relative" ref={dropdownRef}>
+          <div className="w-full relative">
             <Button
+              ref={buttonRef}
               onClick={toggleDropdown}
               variant="default"
               className="w-full justify-between bg-black text-white"
@@ -400,42 +412,6 @@ export default function Resleridle() {
               Select or search for a character!
               <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
-
-            {isOpen && (
-              <div className="absolute mt-2 w-full rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 z-10">
-                <div className="p-2">
-                  <Input
-                    type="text"
-                    placeholder="Enter character name..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="mb-2"
-                  />
-                </div>
-                <div className="max-h-60 overflow-auto">
-                  {filteredCharacters.length > 0 ? (
-                    filteredCharacters.map((char, index) => (
-                      <button
-                        key={index}
-                        onClick={() => handleGuess(char.name)}
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 flex items-center space-x-2"
-                      >
-                        <Image
-                          src={char.photo}
-                          alt={char.name}
-                          width={30}
-                          height={30}
-                          className="rounded-full object-cover"
-                        />
-                        <span>{char.name}</span>
-                      </button>
-                    ))
-                  ) : (
-                    <div className="px-4 py-2 text-sm text-gray-500">No matching character found</div>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
 
           {gameOver && (
@@ -461,7 +437,7 @@ export default function Resleridle() {
           )}
         </div>
 
-        <div className="bg-gray-800 rounded-lg p-4 overflow-x-auto">
+        <div className="bg-gray-800 rounded-lg p-4">
           <table className="w-full border-collapse">
             <thead>
               <tr className="bg-blue-900 text-white">
@@ -521,6 +497,58 @@ export default function Resleridle() {
           </table>
         </div>
       </div>
+      {isOpen && (
+        <div 
+          className="fixed w-full max-w-4xl rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 z-20" 
+          style={{ 
+            maxHeight: '60vh', 
+            overflowY: 'auto',
+            width: `815px`,
+            top: `235px`,
+          }}
+        >
+          <div className="p-2">
+            <Input
+              type="text"
+              placeholder="Enter character name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="mb-2"
+            />
+          </div>
+          <div className="max-h-full overflow-auto hide-scrollbar">
+            {filteredCharacters.length > 0 ? (
+              filteredCharacters.map((char, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleGuess(char.name)}
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 flex items-center space-x-2"
+                >
+                  <Image
+                    src={char.photo}
+                    alt={char.name}
+                    width={30}
+                    height={30}
+                    className="rounded-full object-cover"
+                  />
+                  <span>{char.name}</span>
+                </button>
+              ))
+            ) : (
+              <div className="px-4 py-2 text-sm text-gray-500">No matching character found</div>
+            )}
+          </div>
+        </div>
+      )}
+      <style jsx>{`
+        .hide-scrollbar {
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
     </div>
   )
 }
