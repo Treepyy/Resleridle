@@ -438,11 +438,11 @@ export default function Resleridle() {
         </div>
 
         <div className="bg-gray-800 rounded-lg p-4">
-          <table className="w-full border-collapse">
+          <table className="w-full border-collapse" style={{ border: "4px solid white" }}>
             <thead>
-              <tr className="bg-blue-900 text-white">
+              <tr className="bg-blue-900 text-white" style={{ border: "4px solid white" }}>
                 {attributes.map(attr => (
-                  <th key={attr} className="p-2 text-sm font-bold text-center border-r border-blue-700 last:border-r-0">
+                  <th style={{ border: "4px solid white" }}key={attr} className="p-2 text-sm font-bold text-center border-r border-blue-700 last:border-r-0">
                     {attr === 'itemTrait1' ? 'Item Gift 1' : 
                      attr === 'itemTrait2' ? 'Item Gift 2' : 
                      attr === 'equipmentTrait' ? 'Equipment Gift' : 
@@ -454,7 +454,7 @@ export default function Resleridle() {
             </thead>
             <tbody>
               {guesses.map((guess, i) => (
-                <tr key={i}>
+                <tr style={{ border: "4px solid white" }} key={i}>
                   {attributes.map((attr, j) => {
                     const isRevealed = revealedCells[i]?.[j]
                     return (
@@ -463,6 +463,7 @@ export default function Resleridle() {
                         className={`p-2 border ${getAttributeStyle(attr, guess)} 
                                     transition-all duration-500 ease-in-out`}
                         style={{
+                          border: "4px solid white",
                           perspective: '1000px',
                           transformStyle: 'preserve-3d',
                           transform: isRevealed ? 'rotateX(0deg)' : 'rotateX(180deg)',
