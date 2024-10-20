@@ -597,7 +597,7 @@ export default function Resleridle() {
             maxHeight: '40vh', 
             overflowY: 'auto',
             width: `815px`,
-            top: `290px`,
+            top: `326px`,
           }}
         >
           <div className="p-2">

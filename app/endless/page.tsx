@@ -548,7 +548,7 @@ export default function EndlessMode() {
             maxHeight: '40vh', 
             overflowY: 'auto',
             width: `815px`,
-            top: `330px`,
+            top: `326px`,
           }}
         >
           <div className="p-2">
