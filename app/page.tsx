@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, HelpCircle, Settings, Search, ChevronDown, S
 import Image from 'next/image'
 import Cookies from 'js-cookie'
 import Link from 'next/link'
+import localFont from 'next/font/local'
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -24,6 +25,8 @@ import strikeImg from '@/public/images/elements/strike.png'
 import slashImg from '@/public/images/elements/slash.png'
 
 import bgImg from '@/public/images/bg.jpg'
+
+const myFont = localFont({ src: './fonts/HYWenHei.woff' })
 
 const roleImages = {
   "Attacker": attackerImg,
@@ -424,6 +427,7 @@ export default function Resleridle() {
   }
 
   return (
+    <main className = {myFont.className}>
     <div className="min-h-screen bg-cover bg-center flex flex-col items-center py-8 px-4 relative overflow-hidden">
       <Image
         src={bgImg}
@@ -504,7 +508,7 @@ export default function Resleridle() {
                 {dailyGuesses[dailyGuesses.length - 1].name === solution.name ? 'Congratulations!' : 'Game Over'}
               </h2>
               <p className="text-xl text-white">The character was: {solution.name}</p>
-              <Image src={solution.fullPhoto} alt={solution.name} width={200} height={200} className="rounded-full mx-auto mt-4" />
+              <Image src={solution.fullPhoto} alt={solution.name} width={200} height={200} className="mx-auto mt-4" />
               <Button 
                 onClick={copyToClipboard} 
                 className={`mt-4 ${
@@ -636,5 +640,6 @@ export default function Resleridle() {
         }
       `}</style>
     </div>
+    </main>
   )
 }

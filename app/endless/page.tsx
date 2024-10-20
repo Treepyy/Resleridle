@@ -25,6 +25,10 @@ import slashImg from '@/public/images/elements/slash.png'
 
 import bgImg from '@/public/images/bg.jpg'
 
+import localFont from 'next/font/local'
+
+const myFont = localFont({ src: './HYWenHei.woff' })
+
 const roleImages = {
   "Attacker": attackerImg,
   "Breaker": breakerImg,
@@ -377,6 +381,7 @@ export default function EndlessMode() {
   }
 
   return (
+    <main className={myFont.className}>
     <div className="min-h-screen bg-cover bg-center flex flex-col items-center py-8 px-4 relative overflow-hidden">
       <Image
         src={bgImg}
@@ -434,8 +439,8 @@ export default function EndlessMode() {
         </div>
 
         <div className="text-white text-center mb-4">
-          <span className="mr-4">Current Streak: {endlessStreak}</span>
-          <span>Best Streak: {bestEndlessStreak}</span>
+          <span className="mr-4">🔮 Current Streak: {endlessStreak}</span>
+          <span className="mr-4">🔥 Best Streak: {bestEndlessStreak}</span>
         </div>
 
         <div className="bg-gray rounded-lg p-4">
@@ -457,7 +462,7 @@ export default function EndlessMode() {
                 {endlessGuesses[endlessGuesses.length - 1].name === solution.name ? 'Congratulations!' : 'Game Over'}
               </h2>
               <p className="text-xl text-white">The character was: {solution.name}</p>
-              <Image src={solution.fullPhoto} alt={solution.name} width={200} height={200} className="rounded-full mx-auto mt-4" />
+              <Image src={solution.fullPhoto} alt={solution.name} width={200} height={200} className="mx-auto mt-4" />
               <Button 
                 onClick={startNewGame} 
                 className="mt-4 bg-blue-500 hover:bg-blue-600 text-white"
@@ -583,5 +588,6 @@ export default function EndlessMode() {
         }
       `}</style>
     </div>
+    </main>
   )
 }
