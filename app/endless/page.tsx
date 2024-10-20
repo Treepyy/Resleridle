@@ -279,8 +279,7 @@ export default function EndlessMode() {
   }
 
   const handleGuess = (characterName: string) => {
-    // TODO: fix bug: refreshing when there are 6 guesses (either correct ans or not) 
-    // reverts the gamestate to the 5th guess (data: streaks and last guess not saved in cookie, isOver set to false)
+    // TODO: fix bug: 6th row does not show when refreshing on loss, possible to save current streak by refreshing after a loss
 
     const guessedCharacter = characters.find(char => char.name === characterName)
     if (guessedCharacter && solution) {
@@ -291,7 +290,10 @@ export default function EndlessMode() {
         const isCorrect = guessedCharacter.name === solution.name
         const isGameOver = isCorrect || newGuesses.length === 6
         
-        setGameOver(isGameOver)
+        if (isGameOver) {
+          setGameOver(true)
+          saveEndState(isCorrect)
+        }
 
         setIsOpen(false)
         setSearchTerm('')
@@ -319,6 +321,17 @@ export default function EndlessMode() {
         console.log('Updated cookie data:', cookieData)
       }
     }
+  }
+
+  const saveEndState = (won: boolean) => {
+    Cookies.set('reslerIdleEndlessData', JSON.stringify({
+      endlessGuesses,
+      solution,
+      gameOver: true,
+      revealedCells,
+      endlessStreak,
+      bestEndlessStreak,
+    }), { expires: 365 })
   }
 
   const revealCells = (rowIndex: number) => {

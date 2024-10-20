@@ -301,6 +301,7 @@ export default function Resleridle() {
         
         if (isGameOver) {
           setGameOver(true)
+          saveEndState(isCorrect)
         }
         
         setIsOpen(false)
@@ -328,6 +329,18 @@ export default function Resleridle() {
         setBestDailyStreak(newBestDailyStreak);
       }
     }
+  }
+
+  const saveEndState = (won: boolean) => {
+    Cookies.set('reslerIdleData', JSON.stringify({
+      dailyGuesses,
+      solution,
+      gameOver: true,
+      revealedCells,
+      dailyStreak,
+      bestDailyStreak,
+      lastPlayedDaily: new Date().toDateString()
+    }), { expires: 365 })
   }
 
   const revealCells = (rowIndex: number) => {
