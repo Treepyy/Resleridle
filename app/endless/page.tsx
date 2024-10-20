@@ -213,38 +213,32 @@ const originalCharacters: Character[] = [
 const attributes = ['photo', 'name', 'role', 'element', 'baseRarity', 'itemTrait1', 'itemTrait2', 'equipmentTrait', 'types'] as const;
 type Attribute = typeof attributes[number]
 
-export default function Resleridle() {
+export default function EndlessMode() {
   const characters = useMemo(() => {
     return [...originalCharacters].sort((a, b) => a.name.localeCompare(b.name));
   }, []);
 
-  const [dailyGuesses, setDailyGuesses] = useState<Character[]>([])
+  const [endlessGuesses, setEndlessGuesses] = useState<Character[]>([])
   const [gameOver, setGameOver] = useState(false)
   const [solution, setSolution] = useState<Character | null>(null)
   const [isOpen, setIsOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [revealedCells, setRevealedCells] = useState<boolean[][]>([])
-  const [shareButtonText, setShareButtonText] = useState('Share!')
-  const [dailyStreak, setDailyStreak] = useState(0)
-  const [bestDailyStreak, setBestDailyStreak] = useState(0)
+  const [endlessStreak, setEndlessStreak] = useState(0)
+  const [bestEndlessStreak, setBestEndlessStreak] = useState(0)
 
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const cookieData = Cookies.get('reslerIdleData')
+    const cookieData = Cookies.get('reslerIdleEndlessData')
     if (cookieData) {
       const parsedData = JSON.parse(cookieData)
-      setDailyGuesses(parsedData.dailyGuesses || [])
+      setEndlessGuesses(parsedData.endlessGuesses || [])
       setSolution(parsedData.solution || null)
       setGameOver(parsedData.gameOver || false)
       setRevealedCells(parsedData.revealedCells || [])
-      setDailyStreak(parsedData.dailyStreak || 0)
-      setBestDailyStreak(parsedData.bestDailyStreak || 0)
-
-      const today = new Date().toDateString()
-      if (parsedData.lastPlayedDaily !== today) {
-        startNewGame()
-      }
+      setEndlessStreak(parsedData.endlessStreak || 0)
+      setBestEndlessStreak(parsedData.bestEndlessStreak || 0)
     } else {
       startNewGame()
     }
@@ -266,32 +260,25 @@ export default function Resleridle() {
   const startNewGame = () => {
     setGameOver(false)
     setRevealedCells([])
-    setShareButtonText('Share!')
+    setSolution(characters[Math.floor(Math.random() * characters.length)])
+    setEndlessGuesses([])
 
-    const today = new Date()
-    const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate()
-    const pseudoRandom = (seed * 9301 + 49297) % 233280
-    const index = Math.floor(pseudoRandom / 233280 * characters.length)
-    setSolution(characters[index])
-    setDailyGuesses([])
-
-    Cookies.set('reslerIdleData', JSON.stringify({
-      dailyGuesses: [],
-      solution: characters[index],
+    Cookies.set('reslerIdleEndlessData', JSON.stringify({
+      endlessGuesses: [],
+      solution: characters[Math.floor(Math.random() * characters.length)],
       gameOver: false,
       revealedCells: [],
-      dailyStreak,
-      bestDailyStreak,
-      lastPlayedDaily: new Date().toDateString()
+      endlessStreak,
+      bestEndlessStreak,
     }), { expires: 365 })
   }
 
   const handleGuess = (characterName: string) => {
     const guessedCharacter = characters.find(char => char.name === characterName)
     if (guessedCharacter && solution) {
-      if (!dailyGuesses.some(guess => guess.name === characterName)) {
-        const newGuesses = [...dailyGuesses, guessedCharacter]
-        setDailyGuesses(newGuesses)
+      if (!endlessGuesses.some(guess => guess.name === characterName)) {
+        const newGuesses = [...endlessGuesses, guessedCharacter]
+        setEndlessGuesses(newGuesses)
         
         const isCorrect = guessedCharacter.name === solution.name
         const isGameOver = isCorrect || newGuesses.length === 6
@@ -306,34 +293,34 @@ export default function Resleridle() {
 
         revealCells(newGuesses.length - 1)
 
-        Cookies.set('reslerIdleData', JSON.stringify({
-          dailyGuesses: newGuesses,
+        Cookies.set('reslerIdleEndlessData', JSON.stringify({
+          endlessGuesses: newGuesses,
           solution,
           gameOver: isGameOver,
           revealedCells: [...revealedCells, Array(attributes.length).fill(true)],
-          dailyStreak,
-          bestDailyStreak,
-          lastPlayedDaily: new Date().toDateString()
+          endlessStreak,
+          bestEndlessStreak,
         }), { expires: 365 })
       }
     }
   }
 
   const updateStreaks = (won: boolean) => {
-    let newDailyStreak = won ? dailyStreak + 1 : 0;
-    let newBestDailyStreak = Math.max(bestDailyStreak, newDailyStreak);
-    
-    setDailyStreak(newDailyStreak);
-    setBestDailyStreak(newBestDailyStreak);
+    if (won) {
+      const newEndlessStreak = endlessStreak + 1
+      setEndlessStreak(newEndlessStreak)
+      setBestEndlessStreak(Math.max(bestEndlessStreak, newEndlessStreak))
+    } else {
+      setEndlessStreak(0)
+    }
 
-    Cookies.set('reslerIdleData', JSON.stringify({
-      dailyGuesses,
+    Cookies.set('reslerIdleEndlessData', JSON.stringify({
+      endlessGuesses,
       solution,
       gameOver: true,
       revealedCells,
-      dailyStreak: newDailyStreak,
-      bestDailyStreak: newBestDailyStreak,
-      lastPlayedDaily: new Date().toDateString()
+      endlessStreak: won ? endlessStreak + 1 : 0,
+      bestEndlessStreak: Math.max(bestEndlessStreak, won ? endlessStreak + 1 : 0),
     }), { expires: 365 })
   }
 
@@ -351,7 +338,7 @@ export default function Resleridle() {
 
   const filteredCharacters = characters.filter(char =>
     char.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-    !dailyGuesses.some(guess => guess.name === char.name)
+    !endlessGuesses.some(guess => guess.name === char.name)
   )
 
   const getAttributeStyle = (attribute: Attribute, guess: Character) => {
@@ -389,40 +376,6 @@ export default function Resleridle() {
     return 'bg-gray-500 text-white'
   }
 
-  const generateShareText = () => {
-    const emojiMap = {
-      'bg-green-500': '🟩',
-      'bg-yellow-500': '🟨',
-      'bg-gray-500': '⬜'
-    }
-    
-    let shareText = solution && dailyGuesses[dailyGuesses.length - 1].name === solution.name
-      ? `I found today's Resleridle in ${dailyGuesses.length} ${dailyGuesses.length === 1 ? 'try' : 'tries'}!\n\n`
-      : "I couldn't find today's Resleridle\n\n"
-
-    dailyGuesses.forEach((guess) => {
-      attributes.forEach((attr) => {
-        if (attr !== 'photo') {
-          const style = getAttributeStyle(attr, guess)
-          const styleKey = style.split(' ')[0] as keyof typeof emojiMap;
-          shareText += emojiMap[styleKey] || '⬜';
-        
-        }
-      })
-      shareText += '\n'
-    })
-
-    shareText += '\nhttps://resleridle.vercel.app/'
-    return shareText
-  }
-
-  const copyToClipboard = () => {
-    const shareText = generateShareText()
-    navigator.clipboard.writeText(shareText).then(() => {
-      setShareButtonText('Copied to clipboard!')
-    })
-  }
-
   return (
     <div className="min-h-screen bg-cover bg-center flex flex-col items-center py-8 px-4 relative overflow-hidden">
       <Image
@@ -454,7 +407,7 @@ export default function Resleridle() {
                 <DialogHeader>
                   <DialogTitle>How to Play?</DialogTitle>
                   <DialogDescription>
-                    Guess the Atelier Resleriana character in 6 tries! Each guess must be a valid character.
+                    Guess the Atelier Resleriana character! Each guess must be a valid character.
                   </DialogDescription>
                   <DialogDescription>
                     After each guess, the color of the tiles will change to show how close your guess was to the character.
@@ -472,17 +425,17 @@ export default function Resleridle() {
         </header>
 
         <div className="flex w-full mb-4 bg-gray-800 rounded-lg overflow-hidden">
-          <Link href="/" className="flex-1 bg-white text-gray-800 py-2 text-center font-semibold">
+          <Link href="/" className="flex-1 bg-gray-700 text-gray-300 py-2 text-center font-semibold hover:bg-gray-600">
             Daily Mode
           </Link>
-          <Link href="/endless" className="flex-1 bg-gray-700 text-gray-300 py-2 text-center font-semibold hover:bg-gray-600">
+          <Link href="/endless" className="flex-1 bg-white text-gray-800 py-2 text-center font-semibold">
             Endless Mode
           </Link>
         </div>
 
         <div className="text-white text-center mb-4">
-          {/* <span className="mr-4">Current Streak: {dailyStreak}</span> */}
-          {/* <span>Best Streak: {bestDailyStreak}</span> */}
+          <span className="mr-4">Current Streak: {endlessStreak}</span>
+          <span>Best Streak: {bestEndlessStreak}</span>
         </div>
 
         <div className="bg-gray rounded-lg p-4">
@@ -491,7 +444,7 @@ export default function Resleridle() {
               onClick={toggleDropdown}
               variant="default"
               className="w-full justify-between bg-black text-white"
-              disabled={gameOver || dailyGuesses.length >= 6}
+              disabled={gameOver}
             >
               Select or search for a character!
               <ChevronDown className="ml-2 h-4 w-4" />
@@ -501,21 +454,15 @@ export default function Resleridle() {
           {gameOver && solution && (
             <div className="mt-4 text-center">
               <h2 className="text-2xl font-bold mb-4 text-white">
-                {dailyGuesses[dailyGuesses.length - 1].name === solution.name ? 'Congratulations!' : 'Game Over'}
+                {endlessGuesses[endlessGuesses.length - 1].name === solution.name ? 'Congratulations!' : 'Game Over'}
               </h2>
               <p className="text-xl text-white">The character was: {solution.name}</p>
               <Image src={solution.fullPhoto} alt={solution.name} width={200} height={200} className="rounded-full mx-auto mt-4" />
               <Button 
-                onClick={copyToClipboard} 
-                className={`mt-4 ${
-                  shareButtonText === 'Copied to clipboard!' 
-                    ? 'bg-green-500 hover:bg-green-600' 
-                    : 'bg-gray-800 hover:bg-gray-600'
-                } text-white`} 
-                disabled={shareButtonText === 'Copied to clipboard!'}
+                onClick={startNewGame} 
+                className="mt-4 bg-blue-500 hover:bg-blue-600 text-white"
               >
-                {shareButtonText === 'Copied to clipboard!' ? null : <Share2 className="mr-2 h-4 w-4" />}
-                {shareButtonText}
+                Play Again
               </Button>
             </div>
           )}
@@ -537,7 +484,7 @@ export default function Resleridle() {
               </tr>
             </thead>
             <tbody>
-              {dailyGuesses.map((guess, i) => (
+              {endlessGuesses.map((guess, i) => (
                 <tr style={{ border: "4px solid white" }} key={i}>
                   {attributes.map((attr, j) => {
                     const isRevealed = revealedCells[i]?.[j]
@@ -590,7 +537,7 @@ export default function Resleridle() {
             maxHeight: '40vh', 
             overflowY: 'auto',
             width: `815px`,
-            top: `290px`,
+            top: `330px`,
           }}
         >
           <div className="p-2">
