@@ -301,43 +301,33 @@ export default function Resleridle() {
         
         if (isGameOver) {
           setGameOver(true)
-          updateStreaks(isCorrect)
         }
         
         setIsOpen(false)
         setSearchTerm('')
 
         revealCells(newGuesses.length - 1)
+        
+        let newDailyStreak = isCorrect ? dailyStreak + 1 : dailyStreak;
+        if (newGuesses.length === 6 && !isCorrect){
+          newDailyStreak = 0
+        }
+        let newBestDailyStreak = Math.max(bestDailyStreak, newDailyStreak);
 
         Cookies.set('reslerIdleData', JSON.stringify({
           dailyGuesses: newGuesses,
           solution,
           gameOver: isGameOver,
           revealedCells: [...revealedCells, Array(attributes.length).fill(true)],
-          dailyStreak,
-          bestDailyStreak,
+          dailyStreak: newDailyStreak,
+          bestDailyStreak: newBestDailyStreak,
           lastPlayedDaily: new Date().toDateString()
         }), { expires: 365 })
+
+        setDailyStreak(newDailyStreak);
+        setBestDailyStreak(newBestDailyStreak);
       }
     }
-  }
-
-  const updateStreaks = (won: boolean) => {
-    let newDailyStreak = won ? dailyStreak + 1 : 0;
-    let newBestDailyStreak = Math.max(bestDailyStreak, newDailyStreak);
-    
-    setDailyStreak(newDailyStreak);
-    setBestDailyStreak(newBestDailyStreak);
-
-    Cookies.set('reslerIdleData', JSON.stringify({
-      dailyGuesses,
-      solution,
-      gameOver: true,
-      revealedCells,
-      dailyStreak: newDailyStreak,
-      bestDailyStreak: newBestDailyStreak,
-      lastPlayedDaily: new Date().toDateString()
-    }), { expires: 365 })
   }
 
   const revealCells = (rowIndex: number) => {
@@ -485,8 +475,8 @@ export default function Resleridle() {
         </div>
 
         <div className="text-white text-center mb-4">
-          {/* <span className="mr-4">Current Streak: {dailyStreak}</span> */}
-          {/* <span>Best Streak: {bestDailyStreak}</span> */}
+          <span className="mr-4">🔮 Current Streak: {dailyStreak}</span>
+          <span className="mr-4">🔥 Best Streak: {bestDailyStreak}</span>
         </div>
 
         <div className="bg-gray rounded-lg p-4">

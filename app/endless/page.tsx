@@ -267,17 +267,21 @@ export default function EndlessMode() {
     setSolution(characters[Math.floor(Math.random() * characters.length)])
     setEndlessGuesses([])
 
-    Cookies.set('reslerIdleEndlessData', JSON.stringify({
+    const cookieData = {
       endlessGuesses: [],
       solution: characters[Math.floor(Math.random() * characters.length)],
       gameOver: false,
       revealedCells: [],
-      endlessStreak,
-      bestEndlessStreak,
-    }), { expires: 365 })
+      endlessStreak: endlessStreak,
+      bestEndlessStreak: bestEndlessStreak,
+    }
+    Cookies.set('reslerIdleEndlessData', JSON.stringify(cookieData), { expires: 365 })
   }
 
   const handleGuess = (characterName: string) => {
+    // TODO: fix bug: refreshing when there are 6 guesses (either correct ans or not) 
+    // reverts the gamestate to the 5th guess (data: streaks and last guess not saved in cookie, isOver set to false)
+
     const guessedCharacter = characters.find(char => char.name === characterName)
     if (guessedCharacter && solution) {
       if (!endlessGuesses.some(guess => guess.name === characterName)) {
@@ -287,45 +291,34 @@ export default function EndlessMode() {
         const isCorrect = guessedCharacter.name === solution.name
         const isGameOver = isCorrect || newGuesses.length === 6
         
-        if (isGameOver) {
-          setGameOver(true)
-          updateStreaks(isCorrect)
-        }
-        
+        setGameOver(isGameOver)
+
         setIsOpen(false)
         setSearchTerm('')
 
         revealCells(newGuesses.length - 1)
 
-        Cookies.set('reslerIdleEndlessData', JSON.stringify({
+        let newEndlStreak = isCorrect ? endlessStreak + 1 : endlessStreak;
+        if (!isCorrect && newGuesses.length === 6){
+          newEndlStreak = 0
+        }
+        let newBestEndlStreak = Math.max(bestEndlessStreak, newEndlStreak);
+        
+        setEndlessStreak(newEndlStreak)
+        setBestEndlessStreak(newBestEndlStreak)
+
+        const cookieData = {
           endlessGuesses: newGuesses,
           solution,
           gameOver: isGameOver,
           revealedCells: [...revealedCells, Array(attributes.length).fill(true)],
-          endlessStreak,
-          bestEndlessStreak,
-        }), { expires: 365 })
+          endlessStreak: newEndlStreak,
+          bestEndlessStreak: newBestEndlStreak,
+        }
+        Cookies.set('reslerIdleEndlessData', JSON.stringify(cookieData), { expires: 365 })
+        console.log('Updated cookie data:', cookieData)
       }
     }
-  }
-
-  const updateStreaks = (won: boolean) => {
-    if (won) {
-      const newEndlessStreak = endlessStreak + 1
-      setEndlessStreak(newEndlessStreak)
-      setBestEndlessStreak(Math.max(bestEndlessStreak, newEndlessStreak))
-    } else {
-      setEndlessStreak(0)
-    }
-
-    Cookies.set('reslerIdleEndlessData', JSON.stringify({
-      endlessGuesses,
-      solution,
-      gameOver: true,
-      revealedCells,
-      endlessStreak: won ? endlessStreak + 1 : 0,
-      bestEndlessStreak: Math.max(bestEndlessStreak, won ? endlessStreak + 1 : 0),
-    }), { expires: 365 })
   }
 
   const revealCells = (rowIndex: number) => {
